@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FHIR Chatbot</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            font-size: 12px;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: #2d2d2d;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        #main-content {
+            flex-grow: 1;
+            padding: 20px;
+            padding-bottom: 40px;
+        }
+        #chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #2d2d2d;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .dropdown-toggle {
+            background-color: #4c4c4c;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-toggle:hover {
+            background-color: #151515;
+        }
+
+        .dropdown-toggle i {
+            transition: transform 0.3s;
+        }
+
+        .dropdown-toggle.active i {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            display: none;
+            background-color: #333;
+            width: 100%;
+        }
+        #patient-list, #hospital-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        #patient-list li, #hospital-list li {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #151515;
+            color: white;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        #patient-list li:hover, #hospital-list li:hover {
+            background-color: #a30000;
+        }
+        #logo-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #000000;
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 2px solid #ee0000;
+        }
+        .logo {
+            height: 40px;
+            object-fit: contain;
+            filter: brightness(1.1) contrast(1.1);
+        }
+        .fhir-logo {
+            width: 120px;
+            height: auto;
+        }
+        .openshift-logo {
+            height: 40px;
+            width: auto;
+        }
+        #chat-messages {
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            background-color: #363636;
+        }
+        #input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #user-input {
+            flex-grow: 1;
+            width: auto;
+            padding: 10px;
+            border: 2px solid #444;
+            border-radius: 4px;
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            transition: border-color 0.3s ease;
+        }
+        #user-input:focus {
+            outline: none;
+            border-color: #ee0000;
+        }
+        button {
+            width: auto;
+            padding: 10px 20px;
+            background-color: #ee0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #a30000;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .user-message {
+            background-color: #a30000;
+            align-self: flex-end;
+        }
+        .ai-message {
+            background-color: #3c3c3c;
+            align-self: flex-start;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .ai-message p {
+            margin: 5px 0;
+        }
+        .ai-message .metadata {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+        .ai-response ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        .ai-response li {
+            margin-bottom: 5px;
+        }
+        .ai-response p {
+            margin-bottom: 10px;
+        }
+        .metadata {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 10px;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #0078d4;
+        }
+        .ai-response h3 {
+            color: #0078d4;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .ai-response span {
+            font-weight: normal;
+        }
+
+        .ai-response strong {
+            font-weight: bold;
+        }
+
+        .regenerate-button {
+            display: block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #ee0000;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .regenerate-button:hover {
+            background-color: #a30000;
+        }
+
+        .regenerate-button:disabled {
+            background-color: #f48080;
+            cursor: not-allowed;
+        }
+
+        #copyright-footer {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            font-size: 9px;
+        }
+
+        #copyright-footer p {
+            margin: 0;
+        }
+
+        .ai-message pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+            margin: 0;
+        }
+
+        .ai-message .ai-response {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .ai-message .ai-response p {
+            margin: 5px 0;
+        }
+
+        .ai-message .metadata {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .ai-response ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .ai-response li {
+            margin-bottom: 5px;
+        }
+
+        .confidence-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .confidence-label {
+            margin-right: 5px;
+        }
+
+        .confidence-bar {
+            height: 8px;
+            width: 50px;
+            background-color: #006400; /* Dark green */
+            margin-right: 5px;
+        }
+
+        .confidence-text {
+            color: #006400; /* Dark green */
+        }
+
+        .ai-response p {
+            margin-bottom: 10px;
+        }
+
+        .ai-response ul {
+            margin-bottom: 10px;
+            padding-left: 20px;
+        }
+
+        .ai-response li {
+            margin-bottom: 5px;
+        }
+
+        .ai-response strong {
+            font-weight: bold;
+        }
+
+        .ai-response em {
+            font-style: italic;
+        }
+
+        .ai-response h3 {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #0078d4;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div class="dropdown">
+            <button class="dropdown-toggle" id="patientDropdown">
+                Patients <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-menu">
+                <ul id="patient-list"></ul>
+            </div>
+        </div>
+        <div class="dropdown">
+            <button class="dropdown-toggle" id="hospitalDropdown">
+                Hospitals/Clinics <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-menu">
+                <ul id="hospital-list"></ul>
+            </div>
+        </div>
+    </div>
+    <div id="main-content">
+        <div id="chat-container">
+            <div id="logo-container">
+                <img src="{{ url_for('static', filename='fhir_logo.jpeg') }}" alt="FHIR Logo" class="logo fhir-logo">
+                <img src="{{ url_for('static', filename='openshiftai.png') }}" alt="OpenShift Logo" class="logo openshift-logo">
+            </div>
+            <div id="chat-messages"></div>
+            <div id="input-container">
+                <input type="text" id="user-input" placeholder="Type your message...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="copyright-footer">
+        <p>&copy; 2024 Abhishek Vijra(avijra@redhat.com), Principal SSA APAC Red Hat. All rights reserved.Speical credits Sam Shifman(https://medium.com/@samschifman)</p>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            // Dropdown functionality
+            $('.dropdown-toggle').click(function() {
+                $(this).toggleClass('active');
+                $(this).next('.dropdown-menu').slideToggle(300);
+            });
+
+            // Fetch patient names
+            $.get('/patients', function(data) {
+                let patientList = $('#patient-list');
+                data.forEach(function(patient) {
+                    patientList.append(`<li>${patient}</li>`);
+                });
+            });
+
+            // Fetch organization names
+            $.get('/hospitals', function(data) {
+                let organizationList = $('#hospital-list');
+                data.forEach(function(org) {
+                    organizationList.append(`<li>${org}</li>`);
+                });
+            });
+
+            // Send button click event
+            $('#send-button').click(function() {
+                sendMessage();
+            });
+
+            // Enter key press event
+            $('#user-input').keypress(function(e) {
+                if(e.which == 13) {
+                    sendMessage();
+                }
+            });
+
+            var lastUserInput = '';
+
+            // Function to add a message to the chat
+            function addMessage(sender, message) {
+                var messageClass = sender === 'AI' ? 'ai-message' : 'user-message';
+                var formattedMessage = sender === 'AI' ? formatResponse({answer: message}) : message;
+                $('#chat-messages').append('<div class="message ' + messageClass + '"><strong>' + sender + ':</strong> ' + formattedMessage + '</div>');
+                $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+            }
+
+            // Introductory message
+            var introMessage = `Welcome to the FHIR-Powered Healthcare Assistant build on Red Hat Openshift AI!
+
+This innovative application harnesses the power of FHIR (Fast Healthcare Interoperability Resources) and advanced AI to revolutionize your healthcare data interaction experience. Here's what you can do:
+
+• Patient Information: Ask about specific patients to retrieve their comprehensive health records.
+• Encounter Details: Inquire about patient encounters to get insights into their medical history.
+• Diagnostic Reports: Request information on lab results and diagnostic findings.
+• Treatment Plans: Explore current and past treatment regimens for patients.
+• Medication History: Access detailed medication records and prescription information.
+
+Simply type your questions naturally, and our AI will analyze the FHIR database to provide you with accurate, relevant information. Whether you're a healthcare provider seeking quick patient insights or an administrator needing data summaries, we're here to assist you.
+
+Remember, you can always ask for clarification or request more details on any topic.
+
+IMPORTANT NOTE: All FHIR data used in this application is synthetic data generated by Synthea (https://synthea.mitre.org/). It does not represent real patient information and is used for demonstration purposes only.
+
+Let's begin - what would you like to know?`;
+
+            // Add the introductory message when the page loads
+            $('#chat-messages').append('<div class="message ai-message"><strong>AI:</strong> <pre>' + introMessage + '</pre></div>');
+            $('#chat-messages').scrollTop($('#chat-messages')[0].scrollHeight);
+
+            function sendMessage() {
+                var userInput = $('#user-input').val();
+                if (userInput.trim() !== '') {
+                    lastUserInput = userInput;
+                    $('#chat-messages').append('<div class="message user-message"><strong>You:</strong> ' + userInput + '</div>');
+                    $('#user-input').val('');
+
+                    scrollToBottom();
+                    generateResponse(userInput);
+                }
+            }
+
+            function generateResponse(userInput) {
+                var aiMessageDiv = $('<div class="message ai-message"><strong>AI:</strong> <span class="ai-response">Generating response... (0s)</span></div>');
+                $('#chat-messages').append(aiMessageDiv);
+                scrollToBottom();
+
+                var startTime = Date.now();
+                var messageIndex = 0;
+                var messages = [
+                    "Consulting backend database...",
+                    "Analyzing patient records...",
+                    "Applying AI algorithms...",
+                    "Reviewing medical literature...",
+                    "Cross-referencing treatment protocols...",
+                    "Evaluating diagnostic information...",
+                    "Synthesizing medical insights...",
+                    "Formulating personalized response..."
+                ];
+
+                var timer = setInterval(function() {
+                    var elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                    var currentMessage = messages[messageIndex % messages.length];
+                    aiMessageDiv.find('.ai-response').html(currentMessage + ' (' + elapsedTime + 's)');
+                    messageIndex++;
+                    scrollToBottom();
+                }, 3000); // Change message every 3 seconds
+
+                fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userInput }),
+                })
+                .then(response => {
+                    clearInterval(timer);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text(); // Get the response as text first
+                })
+                .then(text => {
+                    try {
+                        return JSON.parse(text); // Try to parse it as JSON
+                    } catch (e) {
+                        // If it's not JSON, throw an error with the text content
+                        throw new Error(`Server returned non-JSON response: ${text}`);
+                    }
+                })
+                .then(data => {
+                    var formattedResponse = formatResponse(data);
+                    var regenerateButton = '<button class="regenerate-button">Regenerate Response</button>';
+                    aiMessageDiv.html('<strong>AI:</strong> <div class="ai-response">' + formattedResponse + '</div>' + regenerateButton);
+                    scrollToBottom();
+                    
+                    // Add click event for the new regenerate button
+                    aiMessageDiv.find('.regenerate-button').click(function() {
+                        $(this).prop('disabled', true);
+                        generateResponse(lastUserInput);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    aiMessageDiv.find('.ai-response').html("I'm sorry, I couldn't generate a proper answer. Error: " + error.message);
+                    scrollToBottom();
+                });
+            }
+
+            // Function to scroll to the bottom of the chat
+            function scrollToBottom() {
+                var chatMessages = document.getElementById('chat-messages');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Patient name click functionality
+            $(document).on('click', '#patient-list li', function() {
+                var patientName = $(this).text();
+                $('#user-input').val(`Give me the details of patient ${patientName}`);
+            });
+
+            // Organization name click functionality
+            $(document).on('click', '#hospital-list li', function() {
+                var orgName = $(this).text();
+                $('#user-input').val(`Tell me about the organization ${orgName}`);
+            });
+
+            function formatResponse(response) {
+                if (!response || typeof response !== 'object') {
+                    return '<p>Error: Received an invalid response from the server.</p>';
+                }
+
+                let formattedResponse = '';
+                
+                if (response.formatted_answer) {
+                    // Split the answer into sections
+                    let sections = response.formatted_answer.split('\n\n');
+                    
+                    sections = sections.map(section => {
+                        // Check if the section is a list
+                        if (section.includes('\n- ')) {
+                            // Convert to HTML bullet list
+                            let listItems = section.split('\n- ');
+                            let header = listItems.shift();
+                            return `<p>${header}</p><ul>${listItems.map(item => `<li>${item.trim()}</li>`).join('')}</ul>`;
+                        } else {
+                            // Wrap other sections in paragraph tags
+                            return `<p>${section}</p>`;
+                        }
+                    });
+
+                    formattedResponse += sections.join('');
+                }
+
+                if (response.date) {
+                    formattedResponse += '<p class="metadata">Date: ' + response.date + '</p>';
+                }
+                
+                if (response.confidence !== undefined) {
+                    const confidencePercentage = (response.confidence * 100).toFixed(2);
+                    formattedResponse += `
+                        <div class="confidence-container">
+                            <span class="confidence-label">Confidence:</span>
+                            <div class="confidence-bar" style="width: ${confidencePercentage}%;"></div>
+                            <span class="confidence-text">${confidencePercentage}%</span>
+                        </div>
+                    `;
+                }
+
+                return formattedResponse;
+            }
+
+            // Add this new function
+            function setupInputFocus() {
+                const userInput = document.getElementById('user-input');
+                userInput.addEventListener('focus', function() {
+                    this.style.borderColor = '#ee0000';
+                });
+                userInput.addEventListener('blur', function() {
+                    this.style.borderColor = '#444';
+                });
+            }
+
+            // Call the setup function when the page loads
+            document.addEventListener('DOMContentLoaded', setupInputFocus);
+        });
+    </script>
+</body>
+</html>

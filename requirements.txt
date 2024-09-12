@@ -1,0 +1,13 @@
+flask
+flask-cors
+python-dotenv
+neo4j
+langchain
+sentence-transformers
+pprintpp
+boto3
+huggingface_hub
+langchain_community
+openai
+httpx
+langchain-openai

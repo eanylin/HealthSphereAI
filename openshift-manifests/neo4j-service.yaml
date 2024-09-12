@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: neo4j-dev
+spec:
+  selector:
+    app: neo4j-dev
+  ports:
+  - protocol: TCP
+    port: 80
+    name: http
+    targetPort: 7474
+    nodePort: 30080
+  - protocol: TCP
+    name: ws
+    port: 7473
+    targetPort: 7473
+    nodePort: 30473
+  - protocol: TCP
+    name: bolt
+    port: 7687
+    targetPort: 7687
+    nodePort: 30687
+  type: NodePort

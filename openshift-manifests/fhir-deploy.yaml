@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fhir-chatbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fhir-chatbot
+  template:
+    metadata:
+      labels:
+        app: fhir-chatbot
+    spec:
+      containers:
+      - name: fhir-chatbot
+        image: avijra28/fhir-ocpai-app:1.34
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_ENV
+          value: "production"

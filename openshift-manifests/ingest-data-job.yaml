@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fhir-data-ingest-job
+spec:
+  template:
+    metadata:
+      name: fhir-data-ingest
+    spec:
+      containers:
+      - name: fhir-data-ingest
+        image: avijra28/fhir-ocpai-ingest:2.0
+        env:
+        - name: TRANSFORMERS_CACHE
+          value: "/tmp/huggingface"
+      restartPolicy: Never
+  backoffLimit: 0
+  activeDeadlineSeconds: 3600  
+  ttlSecondsAfterFinished: 100

@@ -1,0 +1,10 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: fhir-chatbot-route
+spec:
+  to:
+    kind: Service
+    name: fhir-chatbot-service
+  port:
+    targetPort: 5000
