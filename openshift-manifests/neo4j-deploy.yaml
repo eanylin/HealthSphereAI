@@ -4,7 +4,7 @@ metadata:
   name: neo4j-dev
   labels:
     app: neo4j-dev
-  namespace: fhir-redhat
+  namespace: default
 spec:
   containers:
     - name: neo4j-dev
