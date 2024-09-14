@@ -17,3 +17,6 @@ spec:
         - containerPort: 7687
           protocol: TCP
       imagePullPolicy: Always
+      env:
+        - name: NEO4J_server_config_strict__validation_enabled
+          value: "false"
