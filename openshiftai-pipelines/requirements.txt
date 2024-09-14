@@ -1,0 +1,8 @@
+kfp
+unsloth
+torch
+transformers
+datasets
+codeflare-sdk
+boto3
+botocore
