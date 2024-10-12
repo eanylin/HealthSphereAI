@@ -1,4 +1,4 @@
-# FHIR-Powered AI Chatbot for Healthcare
+# HealthSphereAI: Red Hat OpenShiftAI Powered Graph RAG system
 
 ## 🏥 Project Overview
 
