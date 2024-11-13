@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
       - name: fhir-data-ingest
-        image: avijra28/fhir-ocpai-ingest:2.0
+        image: quay.io/tcorcoran/neo4j-ingest
         env:
         - name: TRANSFORMERS_CACHE
           value: "/tmp/huggingface"

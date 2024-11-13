@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fhir-chatbot
-        image: avijra28/fhir-ocpai-app:1.34
+        image: quay.io/tcorcoran/neo4j-chatbot
         ports:
         - containerPort: 5000
         env:
