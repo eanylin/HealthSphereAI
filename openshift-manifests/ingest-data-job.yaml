@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
       - name: fhir-data-ingest
-        image: quay.io/tcorcoran/neo4j-ingest
+        image: docker.io/tnscorcoran/neo4j-ingest:latest
         env:
         - name: TRANSFORMERS_CACHE
           value: "/tmp/huggingface"
