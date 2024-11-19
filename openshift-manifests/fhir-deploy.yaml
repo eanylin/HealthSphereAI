@@ -20,3 +20,5 @@ spec:
         env:
         - name: FLASK_ENV
           value: "production"
+        - name: VLLM_URL
+          value: "https://mistral.fhir-redhat.svc.cluster.local/v1"          
