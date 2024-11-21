@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: fhir-chatbot
-        image: docker.io/tnscorcoran/neo4j-chatbot:1.1
+        image: docker.io/tnscorcoran/neo4j-chatbot:1.3
         ports:
         - containerPort: 5000
         env:
