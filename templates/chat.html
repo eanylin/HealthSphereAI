@@ -472,7 +472,7 @@ Let's begin - what would you like to know?`;
                     aiMessageDiv.find('.ai-response').html(currentMessage + ' (' + elapsedTime + 's)');
                     messageIndex++;
                     scrollToBottom();
-                }, 3000); // TomC: modifying to 1000 to change message every second
+                }, 1000); // TomC: modifying to 1000 to change message every second
 
                 fetch('/chat', {
                     method: 'POST',
