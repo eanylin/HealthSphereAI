@@ -14,11 +14,11 @@ spec:
     spec:
       containers:
       - name: fhir-chatbot
-        image: docker.io/tnscorcoran/neo4j-chatbot:1.4
+        image: quay.io/julin/neo4j-chatbot:1.1
         ports:
         - containerPort: 5000
         env:
         - name: FLASK_ENV
           value: "production"
         - name: VLLM_URL
-          value: "https://mistral.fhir-redhat.svc.cluster.local/v1"          
+          value: "https://mistral.fhir.svc.cluster.local/v1"          
